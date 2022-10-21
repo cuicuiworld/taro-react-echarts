@@ -1,4 +1,4 @@
-import Taro, { nextTick, useReady } from '@tarojs/taro'
+import Taro, { nextTick } from '@tarojs/taro'
 import { Canvas, View } from '@tarojs/components'
 import { useRef, useState, useMemo, FC, memo, useEffect, CSSProperties } from 'react'
 import { isString, isFunction, isEqual, pick, uniqueId, compareVersion, tripleDefer } from './utils'
@@ -42,17 +42,13 @@ const Echarts: FC<EChartsProps> = ({ echarts, isPage = true, canvasId: pCanvasId
    * 获取小程序渲染层的节点要在 onReady 生命周期，等同于 useReady hooks
    * 访问小程序渲染层的 DOM 节点。
    */
-  useReady(() => {
+  useEffect(() => {
     // 顶层页面级别才触发useReady 【注意Popup 、Dialog 等弹出层 都不是页面级别】
     if (Taro.getEnv() === Taro.ENV_TYPE.WEAPP && isPage) {
       nextTick(() => {
         initChart()
       })
-    }
-  })
-
-  useEffect(() => {
-    if (Taro.getEnv() === Taro.ENV_TYPE.WEB || !isPage) {
+    } else if (Taro.getEnv() === Taro.ENV_TYPE.WEB || !isPage) {
       tripleDefer(() => {
         nextTick(() => {
           initChart()
@@ -94,7 +90,7 @@ const Echarts: FC<EChartsProps> = ({ echarts, isPage = true, canvasId: pCanvasId
   }, [props])
 
   // 大小变化
-  const resize = (canvas) => {
+  const resize = canvas => {
     const echartsInstance = echarts.getInstanceByDom(canvas)
     // 调整大小不应在第一次渲染时发生，因为它会取消初始 echarts 动画
     if (!isInitialResize) {
@@ -175,7 +171,7 @@ const Echarts: FC<EChartsProps> = ({ echarts, isPage = true, canvasId: pCanvasId
   const bindEvents = (instance, events) => {
     function _bindEvent(eventName, func) {
       if (isString(eventName) && isFunction(func)) {
-        instance.on(eventName, (param) => {
+        instance.on(eventName, param => {
           func(param, instance)
         })
       }
@@ -226,7 +222,7 @@ const Echarts: FC<EChartsProps> = ({ echarts, isPage = true, canvasId: pCanvasId
         node: true,
         size: true,
       })
-      .exec((res) => {
+      .exec(res => {
         const [result] = res
         if (result) {
           const { node, width, height } = result || {}
@@ -280,9 +276,9 @@ const Echarts: FC<EChartsProps> = ({ echarts, isPage = true, canvasId: pCanvasId
           canvasId={canvasId}
           style={canvasStyle}
           ref={canvasRef}
-          onTouchStart={(event) => touchStart({ chart: chartRef.current, event })}
-          onTouchMove={(event) => touchMove({ chart: chartRef.current, event })}
-          onTouchEnd={(event) => touchEnd({ chart: chartRef.current, event })}
+          onTouchStart={event => touchStart({ chart: chartRef.current, event })}
+          onTouchMove={event => touchMove({ chart: chartRef.current, event })}
+          onTouchEnd={event => touchEnd({ chart: chartRef.current, event })}
           {...pick(props, canvasProps)}
         />
       )
